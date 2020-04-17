@@ -1,29 +1,30 @@
 #ifndef LINEARREGRESSION_CPP
 #define LINEARREGRESSION_CPP
 #include "LinearRegression.h"
-#include <vector>
-#include <numeric>
-#include <cassert>
 
 LinearRegression::LinearRegression()
 {
-
+    x = new double{ 0 };
+    y = new double{ 0 };
+    size = 0;
 }
 
-LinearRegression::LinearRegression(vector<double>& set_x, vector<double>& set_y)
+LinearRegression::LinearRegression(double* set_x, double* set_y, int set_size)
 {
     x = set_x;
     y = set_y;
+    size = set_size;
 }
 
 LinearRegression::~LinearRegression()
 {
 }
 
-void LinearRegression::setValue(vector<double>& set_x, vector<double>& set_y)
+void LinearRegression::setValue(double* set_x, double* set_y, int set_size)
 {
     x = set_x;
     y = set_y;
+    size = set_size;
 }
 
 double LinearRegression::getSlope()
@@ -34,7 +35,7 @@ double LinearRegression::getSlope()
     double sum_xx = 0; // x^2
 
     // summing the different values
-    for (int i = 0; i < x.size(); i++)
+    for (int i = 0; i < size; i++)
     {
         sum_x += x[i];
         sum_xx += x[i] * x[i];
@@ -43,10 +44,10 @@ double LinearRegression::getSlope()
     }
 
     // dividing by the amount to get the mean
-    double mean_x = sum_x / x.size();
-    double mean_xx = sum_xx / x.size();
-    double mean_xy = sum_xy / x.size();
-    double mean_y = sum_y / x.size();
+    double mean_x = sum_x / size;
+    double mean_xx = sum_xx / size;
+    double mean_xy = sum_xy / size;
+    double mean_y = sum_y / size;
 
     // line of best fit formula derived through
     // partial differentiation of the root mean squared function
@@ -67,15 +68,15 @@ double LinearRegression::getIntercept()
     double sum_y = 0; // y
 
     // summing the different values
-    for (int i = 0; i < x.size(); i++)
+    for (int i = 0; i < size; i++)
     {
         sum_x += x[i];
         sum_y += y[i];
     }
 
     // dividing by the amount to get the mean
-    double mean_x = sum_x / x.size();
-    double mean_y = sum_y / x.size();
+    double mean_x = sum_x / size;
+    double mean_y = sum_y / size;
     double slope = getSlope();
 
     // rewritten y = mx + b to solve for b
@@ -91,7 +92,7 @@ double LinearRegression::getCost(double m, double b, double& dm, double& db)
     double sum_yy = 0; // y^2
 
     // summing the different values
-    for (int i = 0; i < x.size(); i++)
+    for (int i = 0; i < size; i++)
     {
         sum_x += x[i];
         sum_y += y[i];
@@ -101,40 +102,39 @@ double LinearRegression::getCost(double m, double b, double& dm, double& db)
     }
 
     // Cost is defined as the Root Mean Squared Function
-    double cost = (sum_yy) - (2 * m * sum_xy) - (2 * b * sum_y) + (m * m * sum_xx) + (2 * m * b * sum_x) + (static_cast<int>(x.size()) * b * b);
-    cost /= static_cast<int>(x.size());
+    double cost = (sum_yy) - (2 * m * sum_xy) - (2 * b * sum_y) + (m * m * sum_xx) + (2 * m * b * sum_x) + (size * b * b);
+    cost /= size;
 
     // partial derivatives of the Cost Function with respect to slope(m) and intercept(b)
-    dm = 2 * (m * sum_xx + b * sum_x - sum_xy) / static_cast<int>(x.size()); // change in cost with respect to slope(m)
-    db = 2 * (m * sum_x + static_cast<int>(x.size()) * b - sum_y) / static_cast<int>(x.size()); // change in cost with respect to intercept(b)
+    dm = 2 * (m * sum_xx + b * sum_x - sum_xy) / size; // change in cost with respect to slope(m)
+    db = 2 * (m * sum_x + size * b - sum_y) / size; // change in cost with respect to intercept(b)
 
     return cost;
 }
 
-void LinearRegression::linearRegression(double slope, double intercept)
+void LinearRegression::linearRegression(double& slope, double& intercept)
 {
-    double lrate = 0.0002;
+    double learning_rate = 0.0002;
     double threshold = 0.0001;
-    int iter = 0;
+    int iteration = 0;
+
     while (true)
     {
-        double da = 0;
+        double dm = 0;
         double db = 0;
-        double cost = getCost(slope, intercept, da, db);
-        if (iter % 1000 == 0)
+        double cost = getCost(slope, intercept, dm, db);
+        if (iteration % 10000 == 0)
         {
-            //cout << "Iter: " << iter << " cost = " << cost << " da = " << da << " db = " << db << endl;
-            cout << "y = " << slope << "x + " << intercept << endl;
+            cout << "Iteration: " << iteration << " Cost: " << cost << " da: " << dm << " db: " << db << endl;
+            //cout << "y = " << slope << "x + " << intercept << endl;
         }
-        iter++;
-        if (abs(da) < threshold && abs(db) < threshold)
+        iteration++;
+        if (abs(dm) < threshold && abs(db) < threshold)
         {
-            cout << "y = " << slope << " * x + " << intercept << endl;
-            cout << "Linear Regression Cost: " << getCost(slope, intercept, da, db) << endl;
             break;
         }
-        slope -= lrate * da;
-        intercept -= lrate * db;
+        slope -= learning_rate * dm;
+        intercept -= learning_rate * db;
     }
 }
 

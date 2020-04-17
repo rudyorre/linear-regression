@@ -7,16 +7,17 @@ using namespace std;
 class LinearRegression
 {
 private:
-	vector<double> x, y;
+	double* x, * y;
+	int size;
 public:
 	LinearRegression();
-	LinearRegression(vector<double>& set_x, vector<double>& set_y);
+	LinearRegression(double* set_x, double* set_y, int set_size);
 	~LinearRegression();
-	void setValue(vector<double>& set_x, vector<double>& set_y);
+	void setValue(double* set_x, double* set_y, int set_size);
 	double getSlope();
 	double getIntercept();
 	double getCost(double a, double b, double& da, double& db);
-	void linearRegression(double slope = 1, double intercept = 0);
+	void linearRegression(double& slope, double& intercept);
 };
 
 #endif //LINEARREGRESSION_H
